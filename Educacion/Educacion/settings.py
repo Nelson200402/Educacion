@@ -1,3 +1,4 @@
+
 """
 Django settings for Educacion project.
 
@@ -39,6 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'administrador',
     'rest_framework',
+    'inteligencia',
     
 
 ]
@@ -79,16 +81,17 @@ WSGI_APPLICATION = 'Educacion.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'educacion',  # Ejemplo: 'Educacion_db'
-        'USER': 'root',           # Ejemplo: 'root's
-        'PASSWORD': '',    # Tu contraseña
-        'HOST': '127.0.0.1',                    # Dirección del servidor
-        'PORT': '3306',                         # Puerto predeterminado de MySQL
+        'NAME': 'educacion',
+        'USER': 'root',
+        'PASSWORD': '',
+        'HOST': '127.0.0.1',
+        'PORT': '3306',
         'OPTIONS': {
             'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
         }
     }
 }
+
 
 
 # Password validation
