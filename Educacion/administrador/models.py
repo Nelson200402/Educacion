@@ -49,16 +49,19 @@ class Planes(models.Model):
 
 class Sesiones_Estudios(models.Model):
     id = models.AutoField(primary_key=True)
+
     Usuarios_id = models.ForeignKey(
         Usuarios,
         on_delete=models.CASCADE,
         db_column='usuario_id'
     )
+
     Materias_id = models.ForeignKey(
         Materias,
         on_delete=models.CASCADE,
         db_column='materia_id'
     )
+
     Planes_id = models.ForeignKey(
         Planes,
         on_delete=models.CASCADE,
@@ -66,12 +69,19 @@ class Sesiones_Estudios(models.Model):
         blank=True,
         db_column='plan_id'
     )
+
     Nombre = models.CharField(max_length=250)
     descripcion = models.TextField()
     duracion = models.IntegerField()
     estado = models.BooleanField(default=True)
+
+    # ✅ CAMPOS QUE EL CALENDARIO NECESITA
+    fecha = models.DateField(null=True, blank=True)
+    hora_inicio = models.TimeField(null=True, blank=True)
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
 
     def __str__(self):
         return str(self.id)

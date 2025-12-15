@@ -25,5 +25,16 @@ class PlanesViewSet(viewsets.ModelViewSet):
 
 
 class Sesiones_EstudiosViewSet(viewsets.ModelViewSet):
-    queryset = Sesiones_Estudios.objects.all()
     serializer_class = SeccionEstudioSerializer
+
+    def get_queryset(self):
+        qs = Sesiones_Estudios.objects.all()
+        usuario_id = self.request.query_params.get("usuario_id")
+        fecha = self.request.query_params.get("fecha")
+
+        if usuario_id:
+            qs = qs.filter(Usuarios_id_id=usuario_id)
+        if fecha:
+            qs = qs.filter(fecha=fecha)
+
+        return qs.order_by("fecha", "hora_inicio")

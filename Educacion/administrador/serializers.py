@@ -21,16 +21,16 @@ class MateriasSerializer(serializers.ModelSerializer):
 
 
 # ------------------------------
-# PLANES (con foreign key usuario_id)
+# PLANES
 # ------------------------------
 class PlanesSerializer(serializers.ModelSerializer):
-
+    # ✅ NO uses source="Usuarios_id" porque es redundante y truena
     Usuarios_id = serializers.PrimaryKeyRelatedField(
         queryset=Usuarios.objects.all(),
-        source="Usuarios_id",
         write_only=True
     )
 
+    # para mostrar algo legible al hacer GET
     usuario = serializers.StringRelatedField(
         read_only=True,
         source="Usuarios_id"
@@ -39,53 +39,37 @@ class PlanesSerializer(serializers.ModelSerializer):
     class Meta:
         model = Planes
         fields = [
-            "id", "Usuarios_id", "usuario", "Nombre", "contenido",
-            "fuente", "estado", "created_at", "updated_at"
+            "id",
+            "Usuarios_id", "usuario",
+            "Nombre", "contenido", "fuente",
+            "estado",
+            "created_at", "updated_at"
         ]
 
 
 # ------------------------------
-# SESIÓN DE ESTUDIO
+# SESIONES DE ESTUDIO
 # ------------------------------
 class SeccionEstudioSerializer(serializers.ModelSerializer):
-
-    Usuarios_id = serializers.PrimaryKeyRelatedField(
-        queryset=Usuarios.objects.all(),
-        source="Usuarios_id",
-        write_only=True
-    )
-    usuario = serializers.StringRelatedField(
-        read_only=True,
-        source="Usuarios_id"
-    )
-
-    Materias_id = serializers.PrimaryKeyRelatedField(
-        queryset=Materias.objects.all(),
-        source="Materias_id",
-        write_only=True
-    )
-    materia = serializers.StringRelatedField(
-        read_only=True,
-        source="Materias_id"
-    )
-
+    # ✅ que se pueda escribir y también leer (NO write_only)
+    Usuarios_id = serializers.PrimaryKeyRelatedField(queryset=Usuarios.objects.all())
+    Materias_id = serializers.PrimaryKeyRelatedField(queryset=Materias.objects.all())
     Planes_id = serializers.PrimaryKeyRelatedField(
         queryset=Planes.objects.all(),
-        source="Planes_id",
-        write_only=True
+        required=False,
+        allow_null=True
     )
-    plan = serializers.StringRelatedField(
-        read_only=True,
-        source="Planes_id"
-    )
+
+    # ✅ extras “amigables” para el front (opcionales)
+    usuario_id = serializers.IntegerField(source="Usuarios_id_id", read_only=True)
+    materia_id = serializers.IntegerField(source="Materias_id_id", read_only=True)
+    plan_id = serializers.IntegerField(source="Planes_id_id", read_only=True)
 
     class Meta:
         model = Sesiones_Estudios
-        fields = [
-            "id",
-            "Usuarios_id", "usuario",
-            "Materias_id", "materia",
-            "Planes_id", "plan",
-            "Nombre", "descripcion", "duracion", "estado",
-            "created_at", "updated_at"
-        ]
+        fields = "__all__"
+
+
+# ✅ Alias por si en views.py lo importaron con otro nombre
+SesionEstudioSerializer = SeccionEstudioSerializer
+SesionesEstudiosSerializer = SeccionEstudioSerializer
