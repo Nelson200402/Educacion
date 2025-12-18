@@ -1,56 +1,60 @@
-from django.shortcuts import render
-
-# Create your views here.
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
 
+from administrador.models import Usuarios
 from .utils import construir_contexto
 from .services import gemini_responder
 
+
 @api_view(["POST"])
+@permission_classes([IsAuthenticated])
 def recomendar_materia(request):
-    usuario_id = request.data.get("usuario_id")
-    pregunta = request.data.get("pregunta")
+    """
+    POST /ia/
+    Body esperado:
+      - pregunta: string
+    (usuario_id puede venir, pero se IGNORA por seguridad)
+    """
+    pregunta = (request.data.get("pregunta") or "").strip()
+    if not pregunta:
+        return Response(
+            {"detail": "El campo 'pregunta' es obligatorio."},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
 
-    if not usuario_id or not pregunta:
-        return Response({"error": "Debes enviar usuario_id y pregunta"}, status=status.HTTP_400_BAD_REQUEST)
+    # 🔐 Usuario real desde el token (NO desde usuario_id del frontend)
+    usuario = Usuarios.objects.filter(Correo=request.user.email).first()
+    if not usuario:
+        return Response(
+            {
+                "detail": "Perfil incompleto: no existe un registro en 'Usuarios' para este correo. Completa tu perfil."
+            },
+            status=status.HTTP_400_BAD_REQUEST,
+        )
 
     try:
-        usuario_id = int(usuario_id)
-    except:
-        return Response({"error": "usuario_id debe ser numérico"}, status=status.HTTP_400_BAD_REQUEST)
+        contexto = construir_contexto(usuario.id)
+        prompt = (
+            "Eres un asistente experto en planificación de estudio.\n\n"
+            f"{contexto}\n\n"
+            "Pregunta del usuario:\n"
+            f"{pregunta}\n\n"
+            "Devuelve una recomendación clara y accionable."
+        )
+        recomendacion = gemini_responder(prompt)
 
-    try:
-        contexto = construir_contexto(usuario_id)
+        return Response(
+            {
+                "usuario_id": usuario.id,
+                "pregunta": pregunta,
+                "recomendacion": recomendacion,
+            },
+            status=status.HTTP_200_OK,
+        )
     except Exception as e:
-        return Response({"error": f"No se pudo construir contexto: {str(e)}"}, status=status.HTTP_400_BAD_REQUEST)
-
-    prompt = f"""
-Eres un orientador académico.
-Debes recomendar SOLO materias que estén en 'Materias disponibles en el sistema'.
-Usa historial (minutos), dificultad y preferencias del usuario.
-
-CONTEXTO:
-{contexto}
-
-PREGUNTA:
-{pregunta}
-
-Devuelve en este formato EXACTO:
-- Materia recomendada:
-- Por qué (3 razones):
-- 2 alternativas:
-- Plan de acción para hoy (pasos concretos):
-"""
-
-    try:
-        respuesta = gemini_responder(prompt)
-    except Exception as e:
-        return Response({"error": f"Error llamando a Gemini: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-    return Response({
-        "usuario_id": usuario_id,
-        "pregunta": pregunta,
-        "recomendacion": respuesta
-    })
+        return Response(
+            {"detail": f"No se pudo generar recomendación: {str(e)}"},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        )

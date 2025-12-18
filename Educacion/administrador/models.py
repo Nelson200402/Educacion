@@ -19,6 +19,7 @@ class Usuarios(models.Model):
 class Materias(models.Model):
     id = models.AutoField(primary_key=True)
     Nombre = models.CharField(max_length=250)
+    Usuarios_id = models.ForeignKey(Usuarios, on_delete=models.CASCADE, db_column="usuario_id")
     Dificultad = models.CharField(max_length=100)
     Notas = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
