@@ -1,0 +1,137 @@
+
+========================================
+INSTRUCCIONES PARA USAR EL FRONTEND
+(APP MÓVIL CON EXPO + BACKEND DJANGO)
+========================================
+
+--------------------------------------------------
+PARTE 1: CONFIGURAR Y EJECUTAR EL BACKEND (DJANGO)
+--------------------------------------------------
+
+1) Abrir una terminal en la carpeta del backend (donde está manage.py)
+
+2) Activar el entorno virtual (si existe):
+   - Windows:
+     venv\Scripts\activate
+
+3) Instalar dependencias necesarias:
+   pip install django djangorestframework django-cors-headers
+
+4) Configurar CORS
+
+   En settings.py:
+
+   INSTALLED_APPS = [
+     ...
+     "corsheaders",
+     ...
+   ]
+
+   MIDDLEWARE = [
+     "corsheaders.middleware.CorsMiddleware",
+     "django.middleware.common.CommonMiddleware",
+     ...
+   ]
+
+   Para desarrollo (clases):
+   CORS_ALLOW_ALL_ORIGINS = True
+
+5) Permitir conexiones desde el celular:
+
+   En settings.py:
+   ALLOWED_HOSTS = ["*"]
+
+6) Ejecutar migraciones (si no se han ejecutado):
+   python manage.py makemigrations
+   python manage.py migrate
+
+7) Levantar el backend de forma correcta desde la terminal:
+   python manage.py runserver 0.0.0.0:8000
+
+   ⚠️ IMPORTANTE:
+   - NO usar solo "runserver" para levantar ek bakend
+   - El puerto 8000 es el del backend
+
+8) si funciona bien se deberia poder ver desde el navegador del celular con el siguiete link:
+   http://IP_DE_TU_PC:8000/api/usuarios/
+
+
+--------------------------------------------------
+PARTE 2: CONFIGURAR Y EJECUTAR EL FRONTEND (EXPO)
+--------------------------------------------------
+
+1) Abrir una terminal en la carpeta del frontend (educacionApp)
+
+2) Instalar dependencias:
+   npm install
+   (o yarn install)
+
+3) Verificar URL del backend
+   En src/data/http.ts:
+   export const API_URL = "http://(IP_DE_TU_PC):8000";
+
+   En el proyecto esta(pero eso es en mi pc):
+   export const API_URL = "http://192.168.0.3:8000";
+
+   ⚠️ NUNCA usar:
+   - localhost
+   - 127.0.0.1
+   - puerto 8081
+
+4) Iniciar Expo limpiando caché:
+   npx expo start -c
+
+5) Abrir Expo Go en el celular y escanear el QR
+
+--------------------------------------------------
+ERRORES COMUNES Y SOLUCIONES
+--------------------------------------------------
+
+❌ Pantalla negra
+✔ Asegurarse de:
+  - Usar flex: 1 en los View
+  - Usar colores visibles (modo oscuro)
+  - Que el archivo index.tsx retorne un componente
+
+❌ Error: Network request failed
+✔ Revisar:
+  - Backend encendido
+  - runserver 0.0.0.0:8000
+  - API_URL correcto
+  - Celular y PC en la misma red
+
+❌ Error 500 en Expo Go
+✔ Normalmente es:
+  - Backend apagado
+  - URL incorrecta
+  - Puerto equivocado
+
+--------------------------------------------------
+PUERTOS IMPORTANTES
+--------------------------------------------------
+
+- Backend Django: 8000
+- Expo / Frontend: 8081 (automático)
+- NUNCA deben ser el mismo puerto
+
+--------------------------------------------------
+ESTRUCTURA DEL FRONTEND (MODELO 3 CAPAS)
+--------------------------------------------------
+
+src/
+ ├── entidades        -> interfaces (modelos)
+ ├── data             -> servicios / llamadas a la API
+ ├── presentacion     -> pantallas
+ └── componentes      -> componentes reutilizables
+
+--------------------------------------------------
+NOTAS FINALES
+--------------------------------------------------
+
+- El backend debe estar encendido ANTES de abrir la app
+- Siempre usar la IP del PC, no localhost
+- Para producción, CORS y ALLOWED_HOSTS deben configurarse correctamente
+
+========================================
+FIN DE INSTRUCCIONES
+========================================
